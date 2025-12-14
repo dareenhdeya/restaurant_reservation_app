@@ -1,3 +1,4 @@
+// customer_model.dart
 class Customer {
   final String uid;
   final String email;

@@ -1,3 +1,4 @@
+import 'package:customer_app/auth/auth_wrapper.dart';
 import 'package:customer_app/auth/screens/login_screen.dart';
 import 'package:customer_app/home/home_screen.dart';
 import 'package:customer_app/providers/booking_provider.dart';
@@ -50,9 +51,7 @@ class MyApp extends StatelessWidget {
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
 
-      home: FirebaseAuth.instance.currentUser == null
-          ? LoginScreen()
-          : HomeScreen(),
+      home: const AuthWrapper(),
     );
   }
 }

@@ -32,21 +32,10 @@ class _BookTableScreenState extends State<BookTableScreen> {
     '04:00 PM',
     '06:00 PM',
   ];
-
-  // String get formattedDate => selectedDate == null
-  //     ? 'Select date'
-  //     : '${selectedDate!.year}-${selectedDate!.month}-${selectedDate!.day}';
-
+  
   @override
   void initState() {
     super.initState();
-
-    // أول ما الشاشة تفتح
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   context.read<BookingProvider>().listenToReservationsForRestaurant(
-    //     widget.restaurantId,
-    //   );
-    // });
   }
 
   @override

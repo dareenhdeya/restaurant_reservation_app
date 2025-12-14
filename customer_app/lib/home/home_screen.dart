@@ -1,5 +1,6 @@
 
 
+import 'package:customer_app/auth/cubit/auth_cubit.dart';
 import 'package:customer_app/auth/screens/login_screen.dart';
 import 'package:customer_app/auth/services/auth_service.dart';
 import 'package:customer_app/screens/category_restaurants_screen.dart';
@@ -7,6 +8,7 @@ import 'package:customer_app/widgets/category_card.dart';
 import 'package:customer_app/services/category_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class HomeScreen extends StatelessWidget {
   final _categoryService = CategoryService();
@@ -21,12 +23,8 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: Icon(Icons.logout),
-            onPressed: () async {
-              await _auth.logout();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => LoginScreen()),
-              );
+            onPressed: ()  {
+               context.read<AuthCubit>().logout();
             },
           )
         ],
