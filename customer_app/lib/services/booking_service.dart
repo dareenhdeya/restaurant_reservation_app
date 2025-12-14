@@ -4,23 +4,24 @@ import 'package:firebase_auth/firebase_auth.dart';
 class BookingService {
   final _firestore = FirebaseFirestore.instance;
 
-  Stream<QuerySnapshot> getReservations({
-    required String restaurantId,
-    required String date,
-  }) {
-    return _firestore
-        .collection('reservations')
-        .where('restaurantId', isEqualTo: restaurantId)
-        .where('date', isEqualTo: date)
-        .snapshots();
-  }
-
   Stream<QuerySnapshot> getReservationsForRestaurant(String restaurantId) {
     return _firestore
         .collection('restaurants')
         .doc(restaurantId)
         .collection('bookings')
         .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
+
+  Stream<QuerySnapshot> getReservationsForRestaurantByDate(
+    String restaurantId,
+    String date,
+  ) {
+    return FirebaseFirestore.instance
+        .collection('restaurants')
+        .doc(restaurantId)
+        .collection('bookings')
+        .where('date', isEqualTo: date)
         .snapshots();
   }
 

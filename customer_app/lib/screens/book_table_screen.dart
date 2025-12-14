@@ -6,12 +6,14 @@ class BookTableScreen extends StatefulWidget {
   final String restaurantId;
   final int tableNumber;
   final String customerId;
+  final String date;
 
   const BookTableScreen({
     super.key,
     required this.restaurantId,
     required this.tableNumber,
     required this.customerId,
+    required this.date,
   });
 
   @override
@@ -20,7 +22,7 @@ class BookTableScreen extends StatefulWidget {
 
 class _BookTableScreenState extends State<BookTableScreen> {
   int seats = 1;
-  DateTime selectedDate = DateTime.now();
+  // DateTime? selectedDate;
   String? selectedTime;
 
   final List<String> timeSlots = [
@@ -31,19 +33,20 @@ class _BookTableScreenState extends State<BookTableScreen> {
     '06:00 PM',
   ];
 
-  String get formattedDate =>
-      '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}';
+  // String get formattedDate => selectedDate == null
+  //     ? 'Select date'
+  //     : '${selectedDate!.year}-${selectedDate!.month}-${selectedDate!.day}';
 
   @override
   void initState() {
     super.initState();
 
     // أول ما الشاشة تفتح
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BookingProvider>().listenToReservationsForRestaurant(
-        widget.restaurantId,
-      );
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   context.read<BookingProvider>().listenToReservationsForRestaurant(
+    //     widget.restaurantId,
+    //   );
+    // });
   }
 
   @override
@@ -83,32 +86,34 @@ class _BookTableScreenState extends State<BookTableScreen> {
             const SizedBox(height: 20),
 
             // 📅 Date
-            const Text('Reservation Date'),
-            TextButton(
-              child: Text(formattedDate),
-              onPressed: () async {
-                final picked = await showDatePicker(
-                  context: context,
-                  initialDate: selectedDate,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 30)),
-                );
+            // const Text('Reservation Date'),
+            // TextButton(
+            //   child: Text(formattedDate),
+            //   onPressed: () async {
+            //     final picked = await showDatePicker(
+            //       context: context,
+            //       initialDate: selectedDate,
+            //       firstDate: DateTime.now(),
+            //       lastDate: DateTime.now().add(const Duration(days: 30)),
+            //     );
 
-                if (picked != null) {
-                  setState(() {
-                    selectedDate = picked;
-                    selectedTime = null;
-                  });
+            //     if (picked != null) {
+            //       setState(() {
+            //         selectedDate = picked;
+            //         selectedTime = null;
+            //       });
 
-                  // 🔄 نحدّث الحجوزات حسب اليوم الجديد
-                  context
-                      .read<BookingProvider>()
-                      .listenToReservationsForRestaurant(widget.restaurantId);
-                }
-              },
-            ),
+            //       context
+            //           .read<BookingProvider>()
+            //           .listenToReservationsForRestaurant(
+            //             widget.restaurantId,
+            //             formattedDate,
+            //           );
+            //     }
+            //   },
+            // ),
 
-            const SizedBox(height: 20),
+            // const SizedBox(height: 20),
 
             // ⏰ Time Slots
             const Text(
@@ -134,6 +139,7 @@ class _BookTableScreenState extends State<BookTableScreen> {
 
                         final isBooked = bookingProvider.isTimeBooked(
                           tableNumber: widget.tableNumber,
+                          timeSlot: time,
                         );
 
                         return GestureDetector(
@@ -177,8 +183,8 @@ class _BookTableScreenState extends State<BookTableScreen> {
                         restaurantId: widget.restaurantId,
                         tableNumber: widget.tableNumber,
                         seats: seats,
-                        date: formattedDate,
-                        customerId:widget.customerId,
+                        date:  widget.date,
+                        customerId: widget.customerId,
                         timeSlot: selectedTime!,
                       );
 

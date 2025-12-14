@@ -11,29 +11,28 @@ class BookingProvider with ChangeNotifier {
   bool _loading = false;
   bool get isLoading => _loading;
 
-  // 🔹 استمع للحجوزات بتاعة مطعم معين
-  void listenToReservationsForRestaurant(String restaurantId) {
-    _loading = true;
-    notifyListeners();
+void listenToReservationsForRestaurant(
+  String restaurantId,
+  String date,
+) {
+  _loading = true;
+  notifyListeners();
 
-    _service.getReservationsForRestaurant(restaurantId).listen((snapshot) {
-      _reservations = snapshot.docs;
-      _loading = false;
-      notifyListeners();
-    });
-  }
+  _service
+      .getReservationsForRestaurantByDate(restaurantId, date)
+      .listen((snapshot) {
+    _reservations = snapshot.docs;
+    _loading = false;
+    notifyListeners();
+  });
+}
+
 
   // 🔹 هل الوقت محجوز للـ table معين؟
-  // bool isTimeBooked({required int tableNumber, required String timeSlot}) {
-  //   return _reservations.any(
-  //     (r) => r['tableNumber'] == tableNumber && r['timeSlot'] == timeSlot,
-  //   );
-  // }
-  bool isTimeBooked({required int tableNumber}) {
-    // return _reservations.any(
-    //   (r) => r['tableNumber'] == tableNumber && r['timeSlot'] == timeSlot,
-    // );
-    return _reservations.any((r) => r['tableNumber'] == tableNumber);
+  bool isTimeBooked({required int tableNumber, required String timeSlot}) {
+    return _reservations.any(
+      (r) => r['tableNumber'] == tableNumber && r['timeSlot'] == timeSlot,
+    );
   }
 
   // 🔹 عمل حجز جديد
