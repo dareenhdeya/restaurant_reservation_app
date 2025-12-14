@@ -1,7 +1,6 @@
 import 'package:customer_app/auth/screens/login_screen.dart';
 import 'package:customer_app/home/home_screen.dart';
 import 'package:customer_app/providers/booking_provider.dart';
-import 'package:customer_app/providers/reservation_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';

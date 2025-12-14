@@ -87,7 +87,7 @@
 // }
 
 import 'package:customer_app/providers/restaurant_provider.dart';
-import 'package:customer_app/restaurant_details/restaurant_details_screen.dart';
+import 'package:customer_app/screens/restaurant_details_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';

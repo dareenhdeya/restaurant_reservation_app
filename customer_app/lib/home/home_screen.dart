@@ -2,8 +2,8 @@
 
 import 'package:customer_app/auth/screens/login_screen.dart';
 import 'package:customer_app/auth/services/auth_service.dart';
-import 'package:customer_app/categories/category_restaurants_screen.dart';
-import 'package:customer_app/home/category_card.dart';
+import 'package:customer_app/screens/category_restaurants_screen.dart';
+import 'package:customer_app/widgets/category_card.dart';
 import 'package:customer_app/services/category_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';

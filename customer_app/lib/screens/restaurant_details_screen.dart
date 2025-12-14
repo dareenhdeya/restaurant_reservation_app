@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:customer_app/booking/book_table_screen.dart';
+import 'package:customer_app/screens/book_table_screen.dart';
 import 'package:customer_app/providers/booking_provider.dart';
-import 'package:customer_app/restaurant_details/table_widget.dart';
+import 'package:customer_app/widgets/table_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';

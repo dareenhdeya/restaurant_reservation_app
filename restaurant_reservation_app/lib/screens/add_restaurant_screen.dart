@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,6 +7,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../services/restaurant_service.dart';
 
 class AddRestaurantScreen extends StatefulWidget {
+  final QueryDocumentSnapshot? restaurant;
+  AddRestaurantScreen({this.restaurant});
   @override
   State<AddRestaurantScreen> createState() => _AddRestaurantScreenState();
 }
@@ -26,8 +29,32 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
   File? _image;
   double? lat;
   double? lng;
+  bool locationUP = false;
+  bool locationButtonEnabled = true;
 
   final ImagePicker _picker = ImagePicker();
+
+  bool get isEdit => widget.restaurant != null;
+
+  static const String addNewCategoryValue = 'add_new';
+
+  @override
+  void initState() {
+    super.initState();
+
+    if (isEdit) {
+      final r = widget.restaurant!;
+      _nameController.text = r['name'];
+      _descController.text = r['description'];
+      _tablesController.text = r['tablesCount'].toString();
+      _seatsController.text = r['seatsPerTable'].toString();
+      selectedCategoryId = r['categoryId'];
+      selectedCategoryName = r['categoryName'];
+
+      lat = r['location']['lat'];
+      lng = r['location']['lng'];
+    }
+  }
 
   // ---------- Image ----------
   Future<void> pickImage(ImageSource source) async {
@@ -50,7 +77,16 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
       setState(() {
         lat = position.latitude;
         lng = position.longitude;
+
+        locationUP = true;
+        locationButtonEnabled = false;
       });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: !isEdit ? Text('Location Added') : Text('Location updated'),
+        ),
+      );
     } catch (e) {
       ScaffoldMessenger.of(
         context,
@@ -61,33 +97,54 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
   Future<void> saveRestaurant() async {
     if (!_formKey.currentState!.validate()) return;
 
-    if (_image == null || lat == null || lng == null) {
+    // if (!isEdit && (_image == null || lat == null || lng == null)) {
+    //   ScaffoldMessenger.of(
+    //     context,
+    //   ).showSnackBar(SnackBar(content: Text('Complete all fields')));
+    //   return;
+    // }
+    if (lat == null || lng == null) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Complete all fields')));
+      ).showSnackBar(SnackBar(content: Text('Please add location')));
       return;
     }
 
     try {
-      // Encode image
-      final imageBase64 = await restaurantService.encodeImage(_image!);
+      String imageBase64;
 
-      // Save data
-      await restaurantService.addRestaurant(
-        name: _nameController.text,
-        description: _descController.text,
-        imageBase64: imageBase64,
-        categoryId: selectedCategoryId!,
-        categoryName: selectedCategoryName!,
-        tables: int.parse(_tablesController.text),
-        seats: int.parse(_seatsController.text),
-        lat: lat!,
-        lng: lng!,
-      );
+      if (_image != null) {
+        imageBase64 = await restaurantService.encodeImage(_image!);
+      } else {
+        imageBase64 = widget.restaurant!['imageBase64'];
+      }
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Restaurant added successfully')));
+      if (isEdit) {
+        await restaurantService.updateRestaurant(
+          id: widget.restaurant!.id,
+          name: _nameController.text,
+          description: _descController.text,
+          imageBase64: imageBase64,
+          categoryId: selectedCategoryId!,
+          categoryName: selectedCategoryName!,
+          tables: int.parse(_tablesController.text),
+          seats: int.parse(_seatsController.text),
+          lat: lat!,
+          lng: lng!,
+        );
+      } else {
+        await restaurantService.addRestaurant(
+          name: _nameController.text,
+          description: _descController.text,
+          imageBase64: imageBase64,
+          categoryId: selectedCategoryId!,
+          categoryName: selectedCategoryName!,
+          tables: int.parse(_tablesController.text),
+          seats: int.parse(_seatsController.text),
+          lat: lat!,
+          lng: lng!,
+        );
+      }
 
       Navigator.pop(context);
     } catch (e) {
@@ -100,7 +157,9 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Add Restaurant')),
+      appBar: AppBar(
+        title: Text(isEdit ? 'Edit Restaurant' : 'Add Restaurant'),
+      ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16),
         child: Form(
@@ -111,16 +170,36 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
               // Image Preview
               Center(
                 child: GestureDetector(
-                  onTap: () => showImagePicker(),
+                  onTap: showImagePicker,
                   child: Container(
                     height: 160,
                     width: double.infinity,
-                    decoration: BoxDecoration(border: Border.all()),
-                    child: _image == null
-                        ? Icon(Icons.camera_alt, size: 40)
-                        : Image.file(_image!, fit: BoxFit.cover),
+                    decoration: BoxDecoration(
+                      border: Border.all(),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: _image != null
+                        ? Image.file(_image!, fit: BoxFit.cover)
+                        : isEdit
+                        ? Image.memory(
+                            base64Decode(widget.restaurant!['imageBase64']),
+                            fit: BoxFit.cover,
+                          )
+                        : Icon(Icons.camera_alt, size: 40),
                   ),
                 ),
+
+                // child: GestureDetector(
+                //   onTap: () => showImagePicker(),
+                //   child: Container(
+                //     height: 160,
+                //     width: double.infinity,
+                //     decoration: BoxDecoration(border: Border.all()),
+                //     child: _image == null
+                //         ? Icon(Icons.camera_alt, size: 40)
+                //         : Image.file(_image!, fit: BoxFit.cover),
+                //   ),
+                // ),
               ),
 
               SizedBox(height: 16),
@@ -149,21 +228,53 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
 
                   return DropdownButtonFormField(
                     // initialValue: selectedCategoryId,
-                    value: selectedCategoryId,
+                    initialValue: selectedCategoryId,
                     hint: Text('Select Category'),
-                    items: categories.map((doc) {
-                      return DropdownMenuItem(
-                        value: doc.id,
-                        child: Text(doc['name']),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
+                    items: [
+                      ...categories.map((doc) {
+                        return DropdownMenuItem(
+                          value: doc.id,
+                          child: Text(doc['name']),
+                        );
+                      }),
+                      DropdownMenuItem(
+                        value: addNewCategoryValue,
+                        child: Row(
+                          children: [
+                            Icon(Icons.add, size: 18),
+                            SizedBox(width: 8),
+                            Text('Add new category'),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    // onChanged: (value) {
+                    //   final doc = categories.firstWhere((e) => e.id == value);
+                    //   setState(() {
+                    //     selectedCategoryId = value.toString();
+                    //     selectedCategoryName = doc['name'];
+                    //   });
+                    // },
+                    onChanged: (value) async {
+                      if (value == addNewCategoryValue) {
+                        final result = await showAddCategoryDialog();
+                        if (result != null) {
+                          setState(() {
+                            selectedCategoryId = result['id'];
+                            selectedCategoryName = result['name'];
+                          });
+                        }
+                        return;
+                      }
+
                       final doc = categories.firstWhere((e) => e.id == value);
                       setState(() {
                         selectedCategoryId = value.toString();
                         selectedCategoryName = doc['name'];
                       });
                     },
+
                     validator: (v) => v == null ? 'Select category' : null,
                   );
                 },
@@ -194,9 +305,17 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
               SizedBox(height: 16),
 
               ElevatedButton.icon(
-                onPressed: getLocation,
+                onPressed: locationButtonEnabled ? getLocation : null,
                 icon: Icon(Icons.location_on),
-                label: Text(lat == null ? 'Get Location' : 'Location Added'),
+                label: Text(
+                  lat == null
+                      ? 'Get Location'
+                      : !isEdit
+                      ? 'Location Added'
+                      : !locationUP
+                      ? 'Update Location'
+                      : 'Location Updated',
+                ),
               ),
 
               SizedBox(height: 20),
@@ -204,7 +323,7 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
               Center(
                 child: ElevatedButton(
                   onPressed: saveRestaurant,
-                  child: Text('Save Restaurant'),
+                  child: Text(isEdit ? 'Update Restaurant' : 'Save Restaurant'),
                 ),
               ),
             ],
@@ -240,6 +359,43 @@ class _AddRestaurantScreenState extends State<AddRestaurantScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Future<Map<String, String>?> showAddCategoryDialog() async {
+    final controller = TextEditingController();
+
+    return showDialog<Map<String, String>>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text('Add Category'),
+        content: TextField(
+          controller: controller,
+          decoration: InputDecoration(hintText: 'Category name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final name = controller.text.trim();
+              if (name.isEmpty) return;
+
+              final doc = await FirebaseFirestore.instance
+                  .collection('categories')
+                  .add({
+                    'name': name,
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+
+              Navigator.pop(context, {'id': doc.id, 'name': name});
+            },
+            child: Text('Add'),
+          ),
+        ],
       ),
     );
   }

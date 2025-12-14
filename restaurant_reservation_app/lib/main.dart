@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:restaurant_reservation_app/firebase_options.dart';
 import 'package:restaurant_reservation_app/home/vendor_home_screen.dart';
-import 'package:restaurant_reservation_app/providers/category_provider.dart';
-import 'package:restaurant_reservation_app/providers/reservation_provider.dart';
 import 'package:restaurant_reservation_app/providers/restaurant_provider.dart';
 
 void main() async {
@@ -13,9 +11,9 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => RestaurantProvider()),
-        ChangeNotifierProvider(create: (_) => CategoryProvider()),
-        ChangeNotifierProvider(create: (_) => ReservationProvider()),
+        ChangeNotifierProvider(
+          create: (_) => RestaurantProvider()..listenToRestaurants(),
+        ),
       ],
       child: const MyApp(),
     ),

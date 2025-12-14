@@ -35,4 +35,29 @@ class RestaurantService {
       'createdAt': Timestamp.now(),
     });
   }
+
+Future<void> updateRestaurant({
+  required String id,
+  required String name,
+  required String description,
+  required String imageBase64,
+  required String categoryId,
+  required String categoryName,
+  required int tables,
+  required int seats,
+  required double lat,
+  required double lng,
+}) async {
+  await _firestore.collection('restaurants').doc(id).update({
+    'name': name,
+    'description': description,
+    'imageBase64': imageBase64,
+    'categoryId': categoryId,
+    'categoryName': categoryName,
+    'tablesCount': tables,
+    'seatsPerTable': seats,
+    'location': {'lat': lat, 'lng': lng},
+  });
+}
+
 }

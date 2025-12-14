@@ -1,4 +1,4 @@
-import 'package:customer_app/categories/category_restaurants_screen.dart';
+import 'package:customer_app/screens/category_restaurants_screen.dart';
 import 'package:flutter/material.dart';
 
 class CategoryCard extends StatelessWidget {
