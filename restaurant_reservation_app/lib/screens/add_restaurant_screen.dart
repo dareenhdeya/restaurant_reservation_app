@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../utils/location_helper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'restaurant_service.dart';
+import '../services/restaurant_service.dart';
 
 class AddRestaurantScreen extends StatefulWidget {
   @override

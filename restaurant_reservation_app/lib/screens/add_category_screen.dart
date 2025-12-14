@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:restaurant_reservation_app/categories/category_service.dart';
+import 'package:restaurant_reservation_app/services/category_service.dart';
 
 class AddCategoryScreen extends StatefulWidget {
   @override

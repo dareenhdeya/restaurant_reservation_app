@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:restaurant_reservation_app/bookings/booked_tables_screen.dart';
-import 'package:restaurant_reservation_app/categories/add_category_screen.dart';
-import 'package:restaurant_reservation_app/restaurants/add_restaurant_screen.dart';
+import 'package:restaurant_reservation_app/screens/booked_tables_screen.dart';
+import 'package:restaurant_reservation_app/screens/add_category_screen.dart';
+import 'package:restaurant_reservation_app/screens/add_restaurant_screen.dart';
 import 'package:restaurant_reservation_app/widgets/action_card.dart';
 
 class VendorHomeScreen extends StatelessWidget {

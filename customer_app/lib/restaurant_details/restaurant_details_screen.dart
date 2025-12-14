@@ -1,13 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:customer_app/booking/book_table_screen.dart';
+import 'package:customer_app/providers/booking_provider.dart';
 import 'package:customer_app/restaurant_details/table_widget.dart';
-import 'package:customer_app/services/reservation_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RestaurantDetailsScreen extends StatefulWidget {
   final String restaurantId;
+
+  final String customerId = FirebaseAuth.instance.currentUser!.uid;
 
   RestaurantDetailsScreen(this.restaurantId);
 
@@ -20,10 +24,22 @@ class _RestaurantDetailsScreenState extends State<RestaurantDetailsScreen> {
   int? selectedTable;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      context.read<BookingProvider>().listenToReservationsForRestaurant(
+        widget.restaurantId,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final bookingProvider = context.watch<BookingProvider>();
+
     return Scaffold(
       appBar: AppBar(title: Text('Restaurant Details')),
-      body: FutureBuilder(
+      body: FutureBuilder<DocumentSnapshot>(
         future: FirebaseFirestore.instance
             .collection('restaurants')
             .doc(widget.restaurantId)
@@ -34,22 +50,14 @@ class _RestaurantDetailsScreenState extends State<RestaurantDetailsScreen> {
           }
 
           final data = snapshot.data!;
-          if (!data.data()!.containsKey('imageBase64')) {
-            return Center(
-              child: Icon(
-                Icons.image_not_supported,
-                size: 100,
-                color: Colors.grey,
-              ),
-            );
-          }
-          Uint8List imageBytes = base64Decode(data['imageBase64']);
-          final int tablesCount = data['tablesCount'];
+          final map = data.data() as Map<String, dynamic>;
+
+          Uint8List imageBytes = base64Decode(map['imageBase64']);
+          final int tablesCount = map['tablesCount'];
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 🖼 Image
               Image.memory(
                 imageBytes,
                 height: 200,
@@ -60,14 +68,14 @@ class _RestaurantDetailsScreenState extends State<RestaurantDetailsScreen> {
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
-                  data['name'],
+                  map['name'],
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
               ),
 
               Padding(
                 padding: const EdgeInsets.all(12),
-                child: Text(data['description']),
+                child: Text(map['description']),
               ),
 
               Padding(
@@ -78,51 +86,38 @@ class _RestaurantDetailsScreenState extends State<RestaurantDetailsScreen> {
                 ),
               ),
 
-              // 🪑 Tables (Figure 3)
               Expanded(
-                child: StreamBuilder(
-                  stream: ReservationService().getReservationsForRestaurant(
-                    widget.restaurantId,
+                child: GridView.builder(
+                  padding: EdgeInsets.all(12),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
                   ),
-                  builder: (context, snapshot) {
-                    final reservations = snapshot.hasData
-                        ? snapshot.data!.docs
-                        : [];
+                  itemCount: tablesCount,
+                  itemBuilder: (context, index) {
+                    final tableNumber = index + 1;
 
-                    return GridView.builder(
-                      padding: EdgeInsets.all(12),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                      ),
-                      itemCount: tablesCount,
-                      itemBuilder: (context, index) {
-                        final tableNumber = index + 1;
+                    final isBooked = bookingProvider.isTimeBooked(
+                      tableNumber: tableNumber,
+                    );
 
-                        final isBooked = reservations.any(
-                          (r) => r['tableNumber'] == tableNumber,
-                        );
-
-                        return TableWidget(
-                          tableNumber: tableNumber,
-                          isSelected: selectedTable == tableNumber,
-                          isBooked: isBooked,
-                          onTap: isBooked
-                              ? null
-                              : () {
-                                  setState(() {
-                                    selectedTable = tableNumber;
-                                  });
-                                },
-                        );
-                      },
+                    return TableWidget(
+                      tableNumber: tableNumber,
+                      isSelected: selectedTable == tableNumber,
+                      isBooked: isBooked,
+                      onTap: isBooked
+                          ? null
+                          : () {
+                              setState(() {
+                                selectedTable = tableNumber;
+                              });
+                            },
                     );
                   },
                 ),
               ),
 
-              // ➡ Continue
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: ElevatedButton(
@@ -135,6 +130,8 @@ class _RestaurantDetailsScreenState extends State<RestaurantDetailsScreen> {
                               builder: (_) => BookTableScreen(
                                 restaurantId: widget.restaurantId,
                                 tableNumber: selectedTable!,
+                                customerId:
+                                    FirebaseAuth.instance.currentUser!.uid,
                               ),
                             ),
                           );

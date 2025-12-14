@@ -1,11 +1,18 @@
-import 'package:customer_app/services/booking_service.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/booking_provider.dart';
 
 class BookTableScreen extends StatefulWidget {
   final String restaurantId;
   final int tableNumber;
+  final String customerId;
 
-  BookTableScreen({required this.restaurantId, required this.tableNumber});
+  const BookTableScreen({
+    super.key,
+    required this.restaurantId,
+    required this.tableNumber,
+    required this.customerId,
+  });
 
   @override
   State<BookTableScreen> createState() => _BookTableScreenState();
@@ -15,8 +22,6 @@ class _BookTableScreenState extends State<BookTableScreen> {
   int seats = 1;
   DateTime selectedDate = DateTime.now();
   String? selectedTime;
-
-  final bookingService = BookingService();
 
   final List<String> timeSlots = [
     '10:00 AM',
@@ -30,9 +35,23 @@ class _BookTableScreenState extends State<BookTableScreen> {
       '${selectedDate.year}-${selectedDate.month}-${selectedDate.day}';
 
   @override
+  void initState() {
+    super.initState();
+
+    // أول ما الشاشة تفتح
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<BookingProvider>().listenToReservationsForRestaurant(
+        widget.restaurantId,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final bookingProvider = context.watch<BookingProvider>();
+
     return Scaffold(
-      appBar: AppBar(title: Text('Book Table')),
+      appBar: AppBar(title: const Text('Book Table')),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -40,13 +59,13 @@ class _BookTableScreenState extends State<BookTableScreen> {
           children: [
             Text(
               'Table ${widget.tableNumber}',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 20),
 
             // 👥 Seats
-            Text('Number of Seats'),
+            const Text('Number of Seats'),
             DropdownButton<int>(
               value: seats,
               items: List.generate(
@@ -64,7 +83,7 @@ class _BookTableScreenState extends State<BookTableScreen> {
             const SizedBox(height: 20),
 
             // 📅 Date
-            Text('Reservation Date'),
+            const Text('Reservation Date'),
             TextButton(
               child: Text(formattedDate),
               onPressed: () async {
@@ -72,7 +91,7 @@ class _BookTableScreenState extends State<BookTableScreen> {
                   context: context,
                   initialDate: selectedDate,
                   firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(Duration(days: 30)),
+                  lastDate: DateTime.now().add(const Duration(days: 30)),
                 );
 
                 if (picked != null) {
@@ -80,6 +99,11 @@ class _BookTableScreenState extends State<BookTableScreen> {
                     selectedDate = picked;
                     selectedTime = null;
                   });
+
+                  // 🔄 نحدّث الحجوزات حسب اليوم الجديد
+                  context
+                      .read<BookingProvider>()
+                      .listenToReservationsForRestaurant(widget.restaurantId);
                 }
               },
             ),
@@ -87,7 +111,7 @@ class _BookTableScreenState extends State<BookTableScreen> {
             const SizedBox(height: 20),
 
             // ⏰ Time Slots
-            Text(
+            const Text(
               'Available Time Slots',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
@@ -95,90 +119,80 @@ class _BookTableScreenState extends State<BookTableScreen> {
             const SizedBox(height: 10),
 
             Expanded(
-              child: StreamBuilder(
-                stream: bookingService.getReservations(
-                  restaurantId: widget.restaurantId,
-                  date: formattedDate,
-                ),
-                builder: (context, snapshot) {
-                  final reservations = snapshot.hasData
-                      ? snapshot.data!.docs
-                      : [];
-
-                  return GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      mainAxisSpacing: 10,
-                      crossAxisSpacing: 10,
-                    ),
-                    itemCount: timeSlots.length,
-                    itemBuilder: (context, index) {
-                      final time = timeSlots[index];
-
-                      final isBooked = reservations.any(
-                        (r) =>
-                            r['tableNumber'] == widget.tableNumber &&
-                            r['timeSlot'] == time,
-                      );
-
-                      return GestureDetector(
-                        onTap: isBooked
-                            ? null
-                            : () {
-                                setState(() {
-                                  selectedTime = time;
-                                });
-                              },
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: isBooked
-                                ? Colors.grey
-                                : selectedTime == time
-                                ? Colors.blue
-                                : Colors.green,
-                            borderRadius: BorderRadius.circular(10),
+              child: bookingProvider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : GridView.builder(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            mainAxisSpacing: 10,
+                            crossAxisSpacing: 10,
                           ),
-                          child: Center(
-                            child: Text(
-                              time,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                      itemCount: timeSlots.length,
+                      itemBuilder: (context, index) {
+                        final time = timeSlots[index];
+
+                        final isBooked = bookingProvider.isTimeBooked(
+                          tableNumber: widget.tableNumber,
+                        );
+
+                        return GestureDetector(
+                          onTap: isBooked
+                              ? null
+                              : () {
+                                  setState(() {
+                                    selectedTime = time;
+                                  });
+                                },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isBooked
+                                  ? Colors.grey
+                                  : selectedTime == time
+                                  ? Colors.blue
+                                  : Colors.green,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Center(
+                              child: Text(
+                                time,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
+                        );
+                      },
+                    ),
             ),
 
             // ✅ Confirm
             ElevatedButton(
-              onPressed: selectedTime == null ? null : _confirmBooking,
-              child: Text('Confirm Booking'),
+              onPressed: selectedTime == null
+                  ? null
+                  : () async {
+                      await bookingProvider.bookTable(
+                        restaurantId: widget.restaurantId,
+                        tableNumber: widget.tableNumber,
+                        seats: seats,
+                        date: formattedDate,
+                        customerId:widget.customerId,
+                        timeSlot: selectedTime!,
+                      );
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Booking confirmed')),
+                      );
+
+                      Navigator.popUntil(context, (route) => route.isFirst);
+                    },
+              child: const Text('Confirm Booking'),
             ),
           ],
         ),
       ),
     );
-  }
-
-  Future<void> _confirmBooking() async {
-    await bookingService.bookTable(
-      restaurantId: widget.restaurantId,
-      tableNumber: widget.tableNumber,
-      seats: seats,
-      date: formattedDate,
-      timeSlot: selectedTime!,
-    );
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Booking confirmed')));
-
-    Navigator.popUntil(context, (route) => route.isFirst);
   }
 }

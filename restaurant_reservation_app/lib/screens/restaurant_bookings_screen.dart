@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'booking_service.dart';
+import '../services/booking_service.dart';
 
 class RestaurantBookingsScreen extends StatelessWidget {
   final String restaurantId;

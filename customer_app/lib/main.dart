@@ -1,14 +1,26 @@
 import 'package:customer_app/auth/screens/login_screen.dart';
 import 'package:customer_app/home/home_screen.dart';
+import 'package:customer_app/providers/booking_provider.dart';
+import 'package:customer_app/providers/reservation_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:customer_app/firebase_options.dart';
+import 'package:provider/provider.dart';
+import 'providers/restaurant_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => RestaurantProvider()),
+        ChangeNotifierProvider(create: (_) => BookingProvider()),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -38,11 +50,10 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: .fromSeed(seedColor: Colors.deepPurple),
       ),
-      
+
       home: FirebaseAuth.instance.currentUser == null
           ? LoginScreen()
           : HomeScreen(),
-      
-          );
+    );
   }
 }
