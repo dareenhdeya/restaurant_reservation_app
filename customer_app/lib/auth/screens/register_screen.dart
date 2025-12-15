@@ -9,13 +9,10 @@ import 'package:customer_app/auth/services/firestore_service.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class RegisterScreen extends StatefulWidget {
-<<<<<<< HEAD
   final VoidCallback onSwitch;
 
   const RegisterScreen({required this.onSwitch});
 
-=======
->>>>>>> 650f96ddd2ce8618db165768af430662fa47edd5
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
@@ -113,16 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Text('Register'),
                 ),
                 TextButton(
-<<<<<<< HEAD
                   onPressed: widget.onSwitch,
-=======
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => LoginScreen()),
-                    );
-                  },
->>>>>>> 650f96ddd2ce8618db165768af430662fa47edd5
                   child: Text('Already have an account? Login'),
                 ),
               ],
