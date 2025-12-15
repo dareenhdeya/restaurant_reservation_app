@@ -1,3 +1,4 @@
+//restaurant_provider.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../services/restaurant_service.dart';

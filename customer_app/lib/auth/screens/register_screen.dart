@@ -20,6 +20,8 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firestoreService = FirestoreService();
+  bool isPasswordVisible = false;
+  bool isConfirmPasswordVisible = false;
 
   String email = '';
   String password = '';
@@ -69,29 +71,66 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: [
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Name'),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+
                   validator: Validators.name,
                   onChanged: (v) => name = v,
                 ),
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Email'),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
                   validator: Validators.email,
-                  onChanged: (v) => email = v,
+                  onChanged: (v) {
+                    email = v;
+                  },
                 ),
                 TextFormField(
                   decoration: InputDecoration(labelText: 'Phone'),
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+
                   keyboardType: TextInputType.phone,
                   validator: Validators.phone,
                   onChanged: (v) => phone = v,
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Password'),
-                  obscureText: true,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+
+                  decoration: InputDecoration(
+                    labelText: 'Password',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isPasswordVisible = !isPasswordVisible;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: !isPasswordVisible,
                   validator: Validators.password,
                   onChanged: (v) => password = v,
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Confirm Password'),
-                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: 'Confirm Password',
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        isConfirmPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isConfirmPasswordVisible = !isConfirmPasswordVisible;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: !isConfirmPasswordVisible,
                   validator: (v) {
                     if (v != password) {
                       return 'Passwords do not match';

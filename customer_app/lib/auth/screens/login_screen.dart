@@ -19,6 +19,8 @@ const LoginScreen({required this.onSwitch});
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
+ bool isPasswordVisible = false;
+
   String email = '';
   String password = '';
 
@@ -52,8 +54,20 @@ class _LoginScreenState extends State<LoginScreen> {
                   onChanged: (v) => email = v,
                 ),
                 TextFormField(
-                  decoration: InputDecoration(labelText: 'Password'),
-                  obscureText: true,
+                  decoration: InputDecoration(labelText: 'Password', suffixIcon: IconButton(
+                      icon: Icon(
+                        isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          isPasswordVisible = !isPasswordVisible;
+                        });
+                      },
+                    ),
+                  ),
+                  obscureText: !isPasswordVisible,
                   validator: Validators.password,
                   onChanged: (v) => password = v,
                 ),

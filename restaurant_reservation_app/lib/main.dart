@@ -4,10 +4,14 @@ import 'package:provider/provider.dart';
 import 'package:restaurant_reservation_app/firebase_options.dart';
 import 'package:restaurant_reservation_app/home/vendor_home_screen.dart';
 import 'package:restaurant_reservation_app/providers/restaurant_provider.dart';
+import 'package:restaurant_reservation_app/services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  await NotificationService().init();
+
   runApp(
     MultiProvider(
       providers: [

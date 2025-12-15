@@ -1,3 +1,4 @@
+//categories_restaurants_screen.dart
 import 'package:customer_app/providers/restaurant_provider.dart';
 import 'package:customer_app/screens/restaurant_details_screen.dart';
 import 'package:flutter/material.dart';
@@ -64,14 +65,14 @@ class _CategoryRestaurantsScreenState extends State<CategoryRestaurantsScreen> {
                   leading: imageWidget,
                   title: Text(map['name']),
                   subtitle: Text(map['description']),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => RestaurantDetailsScreen(data.id),
-                      ),
-                    );
-                  },
+                  // onTap: () {
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (_) => RestaurantDetailsScreen(data.id),
+                  //     ),
+                  //   );
+                  // },
                 );
               },
             ),

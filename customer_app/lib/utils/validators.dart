@@ -20,6 +20,9 @@ class Validators {
     if (value == null || value.isEmpty) {
       return 'Name is required';
     }
+    if(value.length < 3){
+      return "name must be 3 characters or more";
+    }
     return null;
   }
 

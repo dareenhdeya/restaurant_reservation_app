@@ -1,3 +1,4 @@
+// services/category_service.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class CategoryService {
