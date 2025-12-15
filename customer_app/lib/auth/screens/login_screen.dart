@@ -7,11 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class LoginScreen extends StatefulWidget {
+<<<<<<< HEAD
 final VoidCallback onSwitch;
 
 const LoginScreen({required this.onSwitch});
 
 
+=======
+>>>>>>> 650f96ddd2ce8618db165768af430662fa47edd5
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
@@ -68,7 +71,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Text('Login'),
                 ),
                 TextButton(
+<<<<<<< HEAD
                   onPressed: widget.onSwitch,
+=======
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => RegisterScreen(),
+                      ),
+                    );
+                  },
+>>>>>>> 650f96ddd2ce8618db165768af430662fa47edd5
                   child: Text('Create new account'),
                 ),
               ],
